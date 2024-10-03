@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Mensaje</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #2c2f33;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #23272a;
+            color: #ffffff;
+            resize: none;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            background-color: #7289da;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #677bc4;
+        }
+        #mensajes {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .mensaje {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #282828;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enviar Mensaje</h1>
+        <textarea id="mensaje" placeholder="Escribe aquí..."></textarea>
+        <button onclick="enviarMensaje()">Enviar</button>
+        <div id="mensajes"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1UKJesFSk0z5BcCJHPifUZfHHJchQ_Fk",
+            authDomain: "lavanda-ee38c.firebaseapp.com",
+            databaseURL: "https://lavanda-ee38c-default-rtdb.firebaseio.com",
+            projectId: "lavanda-ee38c",
+            storageBucket: "lavanda-ee38c.appspot.com",
+            messagingSenderId: "621593021572",
+            appId: "1:621593021572:web:aca29cc36a7458a46f06d1"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const database = firebase.database();
+
+        function enviarMensaje() {
+            const mensaje = document.getElementById('mensaje').value;
+            if (mensaje.trim() !== "") {
+                database.ref('mensajes').push().set({
+                    mensaje: mensaje
+                }).then(() => {
+                    console.log("Mensaje enviado:", mensaje);
+                    document.getElementById('mensaje').value = ""; // Limpiar el campo
+                    cargarMensajes(); // Cargar mensajes después de enviar
+                }).catch((error) => {
+                    console.error("Error al enviar el mensaje:", error);
+                });
+            } else {
+                alert("Por favor, escribe un mensaje antes de enviar.");
+            }
+        }
+
+        function cargarMensajes() {
+            const mensajesRef = database.ref("mensajes");
+            mensajesRef.on("value", (snapshot) => {
+                const mensajes = snapshot.val();
+                const mensajesDiv = document.getElementById("mensajes");
+                mensajesDiv.innerHTML = ""; // Limpia el área de mensajes
+
+                for (const id in mensajes) {
+                    const mensaje = mensajes[id].mensaje;
+                    const divMensaje = document.createElement("div");
+                    divMensaje.className = "mensaje";
+                    divMensaje.textContent = mensaje;
+                    mensajesDiv.appendChild(divMensaje);
+                }
+
+                // Desplazar hacia abajo para mostrar el último mensaje
+                mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+            });
+        }
+
+        // Cargar mensajes al cargar la página
+        cargarMensajes();
+    </script>
+</body>
+</html>
+
